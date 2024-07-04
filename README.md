@@ -35,7 +35,7 @@ https://github.com/52beijixing/smartedu-download/releases
 ### 2、本地使用python运行
 1、下载项目文件（无git用户请自行网页下载）
 ```
-git clone https://github.com/52beijixing/smartedu-download
+git clone https://github.com/52beijixing/smartedu-download.git
 ```
 2、进入项目代码路径
 ```

@@ -1,4 +1,5 @@
 import os
+import re
 from platform import system
 from urllib.parse import urlparse, parse_qs
 
@@ -105,3 +106,17 @@ def check_directory_m3u8downloader() -> bool:
         return True  # 如果所有文件都存在，则返回True
     else:
         return False  # 如果不是Windows系统，也可以选择返回False或处理其他逻辑
+    
+
+def sanitize_filename(filename: str):
+    """
+    去除文件名中的非法字符，并用下划线替换，同时处理连续的下划线，使其只保留一个。
+    """
+    # 定义一个正则表达式，匹配所有非法字符和空格，并用下划线替换
+    illegal_chars_pattern = r'[\\/:*?"<>|\s]+'
+    sanitized_once_filename = re.sub(illegal_chars_pattern, '_', filename)
+    
+    # 使用正则表达式去除连续的下划线，只保留一个
+    clean_filename = re.sub(r'_+', '_', sanitized_once_filename)
+    
+    return clean_filename.strip('_')  # 最后去除首尾可能存在的下划线

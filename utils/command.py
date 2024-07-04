@@ -1,27 +1,35 @@
 import os
-from colorama import Fore, Style
-from utils.tool import get_url_param
+from utils.tool import get_url_param, sanitize_filename
 from utils.download import download_file_from_url, download_video
 from utils.getInfo import *
 
 
-
-def print_colored(text, color):
-    """打印彩色文本"""
-    print(getattr(Fore, color) + text + Style.RESET_ALL)
-
 def welcome_interface():
-    print_colored("-------------------------------------------------------------", "BLUE")
-    print_colored("\t\t欢迎使用Smartedu-Download!", "GREEN")
-    print(f"\n当前版本：{Fore.CYAN}v1.0.0 {Style.RESET_ALL}")
-    print(f"\n项目地址：{Fore.CYAN}https://github.com/52beijixing/smartedu-download{Style.RESET_ALL}")
+    print("-------------------------------------------------------------")
+    print("\t\t欢迎使用Smartedu-Download!")
+    print(f"\n当前版本：v1.0.1 ")
+    print(f"\n项目地址：https://github.com/52beijixing/smartedu-download")
     
+
 def get_user_input():
-    print_colored("-------------------------------------------------------------", "BLUE")
-    print_colored("请输入网页地址(输入exit退出):", "YELLOW")
+    print("-------------------------------------------------------------")
+    print("请输入网页地址(输入exit退出):")
     web_url = input(">>> ")
-    print_colored("-------------------------------------------------------------", "BLUE")
+    print("-------------------------------------------------------------")
     return web_url
+
+
+def get_text_file_input():
+    file_name = "smartedu_download.txt"
+    if os.path.exists(file_name):
+        with open(file_name, "r", encoding="utf-8") as file:
+            # 遍历文件的每一行
+            for line in file:
+                # 去除每行末尾的换行符（如果有的话）
+                line = line.rstrip('\n')
+                if line:  # 这里检查line是否非空
+                    print("-------------------------------------------------------------")
+                    download_content(line)
 
 
 def download_content(web_url: str):
@@ -55,7 +63,7 @@ def download_content(web_url: str):
         print("退出程序")
         os._exit(0)
     else:
-        print(f"您输入的链接暂未支持!\n请前往 {Fore.CYAN}https://github.com/52beijixing/smartedu-download/issues{Style.RESET_ALL} 反馈！")
+        print(f"您输入的链接暂未支持!\n请前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
     
     if data is None:
         print("获取数据出错！")
@@ -64,9 +72,9 @@ def download_content(web_url: str):
     current_path  = os.getcwd()
     for item in data:
         dir_name = item.get("dir_name")
-        dir_name = dir_name.replace(" ", "_")
+        dir_name = sanitize_filename(dir_name)
         file_name = item.get("file_name")
-        file_name = file_name.replace(" ", "_")
+        file_name = sanitize_filename(file_name)
         file_url = item.get("file_url")
         file_format = item.get("file_format")
         #file_size = item.get("file_size")

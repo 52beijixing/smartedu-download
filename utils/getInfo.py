@@ -57,7 +57,7 @@ def fetch_resources(resource_key, relations, dir_name):
     return items
 
 
-def get_textbook_info(content_id: str) -> list[dict]:
+def get_textbook_info(content_id: str):
     """
     根据内容ID获取教科书资源信息。
     
@@ -108,7 +108,7 @@ def get_textbook_info(content_id: str) -> list[dict]:
     return None
 
 
-def get_courseware_info(resource_id: str)  -> list[dict]:
+def get_courseware_info(resource_id: str):
     """
     根据资源ID获取课件资源信息。
     
@@ -159,7 +159,7 @@ def get_courseware_info(resource_id: str)  -> list[dict]:
     return None
 
 
-def get_bookcoursebag_info(activity_id: str) -> list[dict]:
+def get_bookcoursebag_info(activity_id: str):
     """
     根据活动ID获取书课包中的课件信息列表。
     
@@ -202,7 +202,7 @@ def get_bookcoursebag_info(activity_id: str) -> list[dict]:
     return None
 
 
-def get_experiment_course_info(course_id: str) -> list[dict]:
+def get_experiment_course_info(course_id: str):
     """
     根据课程ID获取实验课程的资源信息列表。
     
@@ -245,7 +245,7 @@ def get_experiment_course_info(course_id: str) -> list[dict]:
 
 
 
-def get_one_teacher_info(lesson_id: str) -> list[dict]:
+def get_one_teacher_info(lesson_id: str):
     """
     根据章节ID获取一师一课的资源信息列表。
     
@@ -286,7 +286,7 @@ def get_one_teacher_info(lesson_id: str) -> list[dict]:
     return None
 
 
-def get_subject_info(course_id: str) -> list[dict]:
+def get_subject_info(course_id: str):
     """
     根据课程ID获取学科课程精品课的资源信息列表。
     
@@ -321,7 +321,7 @@ def get_subject_info(course_id: str) -> list[dict]:
     return None
 
 
-def get_basis_info(course_id: str) -> list[dict]:
+def get_basis_info(course_id: str):
     """
     根据课程ID获取基础教育精品课的资源信息列表。
     
@@ -356,7 +356,7 @@ def get_basis_info(course_id: str) -> list[dict]:
     return None
 
 
-def get_homework_info(content_id: str) -> list[dict]:
+def get_homework_info(content_id: str):
     """
     根据内容ID获取作业的资源信息列表。
     
