@@ -7,7 +7,7 @@ from utils.getInfo import *
 def welcome_interface():
     print("-------------------------------------------------------------")
     print("\t\t欢迎使用Smartedu-Download!")
-    print(f"\n当前版本：v1.0.1 ")
+    print(f"\n当前版本：v1.0.2 ")
     print(f"\n项目地址：https://github.com/52beijixing/smartedu-download")
     
 
