@@ -63,7 +63,7 @@ def download_file_from_url(url: str, save_path: str, filename: str = None) -> st
 
 def downloader_m3u8(m3u8_url: str, save_path: str, file_name: str, key: bytes) -> None:
     key_base64 = bytes_to_base64(key)
-    cmd = f'N_m3u8DL-CLI_v3.0.2.exe {m3u8_url} --workDir {save_path} --saveName {file_name} --useKeyBase64 {key_base64} --enableDelAfterDone'
+    cmd = f'N_m3u8DL-CLI_v3.0.2.exe "{m3u8_url}" --workDir "{save_path}" --saveName "{file_name}" --useKeyBase64 "{key_base64}" --enableDelAfterDone'
     os.system(cmd)
     
 
