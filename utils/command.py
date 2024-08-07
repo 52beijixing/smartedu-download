@@ -1,5 +1,5 @@
 import os
-from utils.tool import get_url_param, sanitize_filename
+from utils.tool import get_url_param, sanitize_filename, replace_domain
 from utils.download import download_file_from_url, download_video
 from utils.getInfo import *
 
@@ -7,7 +7,7 @@ from utils.getInfo import *
 def welcome_interface():
     print("-------------------------------------------------------------")
     print("\t\t欢迎使用Smartedu-Download!")
-    print(f"\n当前版本：v1.0.2 ")
+    print(f"\n当前版本：v1.0.3 ")
     print(f"\n项目地址：https://github.com/52beijixing/smartedu-download")
     
 
@@ -33,6 +33,8 @@ def get_text_file_input():
 
 
 def download_content(web_url: str):
+    # 域名替换
+    web_url = replace_domain(web_url)
     data = []
     # url判断
     if web_url.startswith("https://basic.smartedu.cn/tchMaterial/detail?contentType=assets_document"):
@@ -71,8 +73,9 @@ def download_content(web_url: str):
     
     current_path  = os.getcwd()
     for item in data:
+        teacher_name = item.get("teacher_name")
         dir_name = item.get("dir_name")
-        dir_name = sanitize_filename(dir_name)
+        dir_name = sanitize_filename("["+teacher_name+"]"+dir_name)
         file_name = item.get("file_name")
         file_name = sanitize_filename(file_name)
         file_url = item.get("file_url")
@@ -80,7 +83,7 @@ def download_content(web_url: str):
         #file_size = item.get("file_size")
         path = os.path.join(current_path, dir_name)
 
-        if file_format == "mp4" or file_format == "m3u8":
+        if file_format == "mp4" or file_format == "m3u8" or file_format == "avi" or file_format == "flv":
             try:
                 download_video(file_url, path, file_name)
             except Exception as e:

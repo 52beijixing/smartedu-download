@@ -23,7 +23,7 @@ def get_download_url(ti_items, file_size, file_format):
         prefix = url_prefixes.get(file_format, url_prefixes["default"]) if file_format != "mp4" else url_prefixes[file_format]
         
         # 检查文件格式和大小条件，一旦满足则立即返回URL
-        if ((file_format == "mp4" and item.get("ti_file_flag") == "href") or
+        if (item.get("ti_file_flag") == "href" or
             (item.get("ti_size") == file_size and file_format != "mp4")):
             ti_storage = item.get("ti_storage")
             return replace_starting_pattern(ti_storage, prefix)
@@ -32,7 +32,7 @@ def get_download_url(ti_items, file_size, file_format):
     return None
 
 
-def fetch_resources(resource_key, relations, dir_name):
+def fetch_resources(resource_key, relations, dir_name, teacher_name):
     """提取特定资源列表中的文件信息"""
     resource_list = relations.get(resource_key, [])
     items = []
@@ -52,7 +52,8 @@ def fetch_resources(resource_key, relations, dir_name):
             "file_name": file_name,
             "file_url": file_url,
             "file_format": file_format,
-            "file_size": file_size
+            "file_size": file_size,
+            "teacher_name": teacher_name
         })
     return items
 
@@ -186,8 +187,12 @@ def get_bookcoursebag_info(activity_id: str):
         # 提取书课包标题和资源关系
         dir_name = data.get("title")
         relations = data.get("relations", {})
+        teacher_list = data.get("teacher_list")
+        teacher_name = teacher_list[0]["name"]
+        if not teacher_name:
+            teacher_name = "未知教师"
 
-        bookcoursebag_info_list = fetch_resources("national_course_resource", relations, dir_name)
+        bookcoursebag_info_list = fetch_resources("national_course_resource", relations, dir_name, teacher_name)
         
         return bookcoursebag_info_list
     except requests.exceptions.HTTPError as http_err:
@@ -223,11 +228,15 @@ def get_experiment_course_info(course_id: str):
         data = response.json()
         relations = data.get("relations", {})
         name = data.get("title", "")
+        teacher_list = data.get("teacher_list")
+        teacher_name = teacher_list[0]["name"]
+        if not teacher_name:
+            teacher_name = "未知教师"
         
         # 处理lesson_1资源
-        lesson_1_items = fetch_resources("lesson_1", relations, "")
+        lesson_1_items = fetch_resources("lesson_1", relations, name, teacher_name)
         # 处理实验视频资源
-        experiment_video_items = fetch_resources("experiment_video", relations, "")
+        experiment_video_items = fetch_resources("experiment_video", relations, name, teacher_name)
 
         experiment_course_list = lesson_1_items + experiment_video_items
                 
@@ -264,11 +273,15 @@ def get_one_teacher_info(lesson_id: str):
         data = response.json()
         relations = data.get("relations", {})
         dir_name = data.get("title")
+        teacher_list = data.get("teacher_list")
+        teacher_name = teacher_list[0]["name"]
+        if not teacher_name:
+            teacher_name = "未知教师"
         
         # 分别处理不同类型的资源
-        lesson_plan_design_items = fetch_resources("lesson_plan_design", relations, dir_name)
-        classroom_record_items = fetch_resources("classroom_record", relations, dir_name)
-        teaching_assets_items = fetch_resources("teaching_assets", relations, dir_name)
+        lesson_plan_design_items = fetch_resources("lesson_plan_design", relations, dir_name, teacher_name)
+        classroom_record_items = fetch_resources("classroom_record", relations, dir_name, teacher_name)
+        teaching_assets_items = fetch_resources("teaching_assets", relations, dir_name, teacher_name)
         
         # 合并所有资源列表
         one_teacher_list = lesson_plan_design_items + classroom_record_items + teaching_assets_items
@@ -305,8 +318,12 @@ def get_subject_info(course_id: str):
         data = response.json()
         relations= data.get("relations", {})
         dir_name = data.get("title")
+        teacher_list = data.get("teacher_list")
+        teacher_name = teacher_list[0]["name"]
+        if not teacher_name:
+            teacher_name = "未知教师"
 
-        subject_list = fetch_resources("course_resource", relations, dir_name)
+        subject_list = fetch_resources("course_resource", relations, dir_name, teacher_name)
 
         return subject_list
     except requests.exceptions.HTTPError as http_err:
@@ -340,8 +357,12 @@ def get_basis_info(course_id: str):
         data = response.json()
         relations= data.get("relations", {})
         dir_name = data.get("title")
+        teacher_list = data.get("teacher_list")
+        teacher_name = teacher_list[0]["name"]
+        if not teacher_name:
+            teacher_name = "未知教师"
 
-        basis_list = fetch_resources("course_resource", relations, dir_name)
+        basis_list = fetch_resources("course_resource", relations, dir_name, teacher_name)
 
         return basis_list
     except requests.exceptions.HTTPError as http_err:

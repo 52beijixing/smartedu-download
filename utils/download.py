@@ -61,9 +61,12 @@ def download_file_from_url(url: str, save_path: str, filename: str = None) -> st
     return None
 
 
-def downloader_m3u8(m3u8_url: str, save_path: str, file_name: str, key: bytes) -> None:
-    key_base64 = bytes_to_base64(key)
-    cmd = f'N_m3u8DL-CLI_v3.0.2.exe "{m3u8_url}" --workDir "{save_path}" --saveName "{file_name}" --useKeyBase64 "{key_base64}" --enableDelAfterDone'
+def downloader_m3u8(m3u8_url: str, save_path: str, file_name: str, key: bytes = b'') -> None:
+    if not key:
+        cmd = f'N_m3u8DL-CLI_v3.0.2.exe "{m3u8_url}" --workDir "{save_path}" --saveName "{file_name}" --enableDelAfterDone'
+    else:
+        key_base64 = bytes_to_base64(key)
+        cmd = f'N_m3u8DL-CLI_v3.0.2.exe "{m3u8_url}" --workDir "{save_path}" --saveName "{file_name}" --useKeyBase64 "{key_base64}" --enableDelAfterDone'
     os.system(cmd)
     
 
@@ -87,6 +90,20 @@ def download_video(m3u8_url: str, save_path: str, file_name: str) -> None:
     m3u8_info = parse_m3u8(m3u8_url)
     ts_segments = m3u8_info.get('ts_segments')
     key_url = m3u8_info.get('key_url')
+
+    # 如果没有密钥URL，没有加密，则直接下载并解
+    if key_url is None and check_directory_m3u8downloader():
+        downloader_m3u8(m3u8_url, save_path, file_name)
+        return
+    elif key_url is None and not check_directory_m3u8downloader():
+        # 准备TS片段存储的文件夹路径
+        ts_segment_folder = os.path.join(save_path, file_name+"temp")
+        # 下载TS片段
+        download_encrypted_m3u8(m3u8_url, ts_segments, save_path, file_name+"temp")
+        # 合并所有TS片段为最终视频文件
+        merge_ts_files(ts_segment_folder, save_path, file_name)
+        return
+
     key_id = m3u8_info.get('key_id')
     initialization_vector = m3u8_info.get('iv')
     
@@ -176,6 +193,7 @@ def get_signs(key_url: str,key_id: str):
     except Exception as e:
         print(f"未知错误: {e}")
 
+
 def download_encrypted_m3u8(m3u8_url, ts_segments, save_path, key_id , key = None, iv = None):
     """下载加密的M3U8视频流"""
     output_folder = os.path.join(save_path, key_id)
@@ -194,8 +212,7 @@ def download_encrypted_m3u8(m3u8_url, ts_segments, save_path, key_id , key = Non
     print("ts视频流下载完成.")
 
 
-
-def download_ts_segment(ts_url: str, ts_temp_folder: str, key:str = None, iv:str = None):
+def download_ts_segment(ts_url: str, ts_temp_folder: str, key:str = '', iv:str = None):
     """
     下载并（可选）解密单个TS片段。
     
@@ -222,7 +239,7 @@ def download_ts_segment(ts_url: str, ts_temp_folder: str, key:str = None, iv:str
                 raise  # 所有重试均失败，重新抛出异常
     
     # 根据是否提供密钥决定是否解密
-    if key is not None:
+    if key:
         decrypted_data = aes_cbc_decrypt(key, encrypted_data, iv)
     else:
         decrypted_data = encrypted_data  # 未提供密钥，直接使用加密数据

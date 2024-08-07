@@ -18,6 +18,23 @@
     </a>
 </p>
 
+## 特别推荐和感谢
+> 吾爱破解论坛【dtsuifeng】大佬
+
+### 版本优点
+1、支持win7、win10、win11系统32位及64位
+
+2、提供GUI（图形界面）
+
+3、其他功能优化和BUG修复
+
+软件地址：https://www.52pojie.cn/thread-1937211-1-1.html
+
+<p align="center">
+    <a href="https://www.52pojie.cn/thread-1937211-1-1.html">
+        <img src="./images/dtsuifeng.png" alt="dtsuifeng">
+    </a>
+</p>
 
 ## 使用须知
 ### 声明

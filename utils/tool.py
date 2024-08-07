@@ -4,6 +4,17 @@ from platform import system
 from urllib.parse import urlparse, parse_qs
 
 
+def replace_domain(web_url):
+    """
+    替换域名,实现支持其他域名
+    """
+    if web_url.startswith("https://xue-test.ykt.eduyun.cn/"):
+        return web_url.replace("https://xue-test.ykt.eduyun.cn/", "https://basic.smartedu.cn/")
+    elif web_url.startswith("https://jpk-test.ykt.eduyun.cn/"):
+        return web_url.replace("https://jpk-test.ykt.eduyun.cn/", "https://jpk.basic.smartedu.cn/")
+    return web_url
+
+
 def replace_starting_pattern(url: str, replacement: str) -> str:
     """
     在URL中将'cs_path:${ref-path}'前缀替换为新字符串。
@@ -113,10 +124,18 @@ def sanitize_filename(filename: str):
     去除文件名中的非法字符，并用下划线替换，同时处理连续的下划线，使其只保留一个。
     """
     # 定义一个正则表达式，匹配所有非法字符和空格，并用下划线替换
-    illegal_chars_pattern = r'[\\/:*?"<>|\s]+'
+    illegal_chars_pattern = r'[\\/:*?,"<>|\s]+'
     sanitized_once_filename = re.sub(illegal_chars_pattern, '_', filename)
     
     # 使用正则表达式去除连续的下划线，只保留一个
     clean_filename = re.sub(r'_+', '_', sanitized_once_filename)
+
+    # 去除首尾可能存在的下划线
+    clean_filename = clean_filename.strip('_')
+    
+    # 检查文件名长度是否超过50字节
+    if len(clean_filename.encode('utf-8')) > 50:
+        # 截取至50字节
+        clean_filename = clean_filename.encode('utf-8')[:50].decode('utf-8', 'ignore')
     
     return clean_filename.strip('_')  # 最后去除首尾可能存在的下划线
