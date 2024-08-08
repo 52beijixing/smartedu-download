@@ -75,7 +75,10 @@ def download_content(web_url: str):
     for item in data:
         teacher_name = item.get("teacher_name", "")
         dir_name = item.get("dir_name")
-        dir_name = sanitize_filename("["+teacher_name+"]"+dir_name)
+        if not dir_name:
+            dir_name = sanitize_filename(dir_name)
+        else:
+            dir_name = sanitize_filename("["+teacher_name+"]"+dir_name)
         file_name = item.get("file_name")
         file_name = sanitize_filename(file_name)
         file_url = item.get("file_url")
