@@ -73,7 +73,7 @@ def download_content(web_url: str):
     
     current_path  = os.getcwd()
     for item in data:
-        teacher_name = item.get("teacher_name")
+        teacher_name = item.get("teacher_name", "")
         dir_name = item.get("dir_name")
         dir_name = sanitize_filename("["+teacher_name+"]"+dir_name)
         file_name = item.get("file_name")
