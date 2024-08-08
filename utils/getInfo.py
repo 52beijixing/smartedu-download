@@ -1,5 +1,9 @@
 import requests
-from utils.tool import replace_starting_pattern
+from utils.tool import replace_starting_pattern, get_info_parse
+import random
+import time
+from utils.crypt import auth_encrypt
+import re
 
 
 def get_download_url(ti_items, file_size, file_format):
@@ -32,7 +36,7 @@ def get_download_url(ti_items, file_size, file_format):
     return None
 
 
-def fetch_resources(resource_key, relations, dir_name, teacher_name):
+def fetch_resources(resource_key, relations, dir_name, teacher_name, user_data, app_id):
     """提取特定资源列表中的文件信息"""
     resource_list = relations.get(resource_key, [])
     items = []
@@ -47,6 +51,14 @@ def fetch_resources(resource_key, relations, dir_name, teacher_name):
         file_size = custom_properties.get("size", "")
         ti_items = item.get("ti_items", [])
         file_url = get_download_url(ti_items, file_size, file_format)
+        if file_url is None:
+            container_id = item.get("container_id")
+            id =item.get("id")
+            access_token = get_info_parse(user_data, "access_token")
+            mac_key = get_info_parse(user_data, "mac_key")
+            save_info(container_id, id, access_token, mac_key, app_id)
+            file_url = get_courseware_url(id, access_token, mac_key, app_id)
+
         items.append({
             "dir_name": dir_name,
             "file_name": file_name,
@@ -58,7 +70,7 @@ def fetch_resources(resource_key, relations, dir_name, teacher_name):
     return items
 
 
-def get_textbook_info(content_id: str):
+def get_textbook_info(content_id: str, user_data: str, app_id: str):
     """
     根据内容ID获取教科书资源信息。
     
@@ -109,7 +121,7 @@ def get_textbook_info(content_id: str):
     return None
 
 
-def get_courseware_info(resource_id: str):
+def get_courseware_info(resource_id: str, user_data: str, app_id: str):
     """
     根据资源ID获取课件资源信息。
     
@@ -160,7 +172,7 @@ def get_courseware_info(resource_id: str):
     return None
 
 
-def get_bookcoursebag_info(activity_id: str):
+def get_bookcoursebag_info(activity_id: str, user_data: str, app_id: str):
     """
     根据活动ID获取书课包中的课件信息列表。
     
@@ -191,8 +203,7 @@ def get_bookcoursebag_info(activity_id: str):
         teacher_name = teacher_list[0]["name"]
         if not teacher_name:
             teacher_name = "未知教师"
-
-        bookcoursebag_info_list = fetch_resources("national_course_resource", relations, dir_name, teacher_name)
+        bookcoursebag_info_list = fetch_resources("national_course_resource", relations, dir_name, teacher_name, user_data, app_id)
         
         return bookcoursebag_info_list
     except requests.exceptions.HTTPError as http_err:
@@ -207,7 +218,7 @@ def get_bookcoursebag_info(activity_id: str):
     return None
 
 
-def get_experiment_course_info(course_id: str):
+def get_experiment_course_info(course_id: str, user_data: str, app_id: str):
     """
     根据课程ID获取实验课程的资源信息列表。
     
@@ -234,9 +245,9 @@ def get_experiment_course_info(course_id: str):
             teacher_name = "未知教师"
         
         # 处理lesson_1资源
-        lesson_1_items = fetch_resources("lesson_1", relations, name, teacher_name)
+        lesson_1_items = fetch_resources("lesson_1", relations, name, teacher_name, user_data, app_id)
         # 处理实验视频资源
-        experiment_video_items = fetch_resources("experiment_video", relations, name, teacher_name)
+        experiment_video_items = fetch_resources("experiment_video", relations, name, teacher_name, user_data, app_id)
 
         experiment_course_list = lesson_1_items + experiment_video_items
                 
@@ -254,7 +265,7 @@ def get_experiment_course_info(course_id: str):
 
 
 
-def get_one_teacher_info(lesson_id: str):
+def get_one_teacher_info(lesson_id: str, user_data: str, app_id: str):
     """
     根据章节ID获取一师一课的资源信息列表。
     
@@ -279,9 +290,9 @@ def get_one_teacher_info(lesson_id: str):
             teacher_name = "未知教师"
         
         # 分别处理不同类型的资源
-        lesson_plan_design_items = fetch_resources("lesson_plan_design", relations, dir_name, teacher_name)
-        classroom_record_items = fetch_resources("classroom_record", relations, dir_name, teacher_name)
-        teaching_assets_items = fetch_resources("teaching_assets", relations, dir_name, teacher_name)
+        lesson_plan_design_items = fetch_resources("lesson_plan_design", relations, dir_name, teacher_name, user_data, app_id)
+        classroom_record_items = fetch_resources("classroom_record", relations, dir_name, teacher_name, user_data, app_id)
+        teaching_assets_items = fetch_resources("teaching_assets", relations, dir_name, teacher_name, user_data, app_id)
         
         # 合并所有资源列表
         one_teacher_list = lesson_plan_design_items + classroom_record_items + teaching_assets_items
@@ -299,7 +310,7 @@ def get_one_teacher_info(lesson_id: str):
     return None
 
 
-def get_subject_info(course_id: str):
+def get_subject_info(course_id: str, user_data: str, app_id: str):
     """
     根据课程ID获取学科课程精品课的资源信息列表。
     
@@ -323,7 +334,7 @@ def get_subject_info(course_id: str):
         if not teacher_name:
             teacher_name = "未知教师"
 
-        subject_list = fetch_resources("course_resource", relations, dir_name, teacher_name)
+        subject_list = fetch_resources("course_resource", relations, dir_name, teacher_name, user_data, app_id)
 
         return subject_list
     except requests.exceptions.HTTPError as http_err:
@@ -338,7 +349,7 @@ def get_subject_info(course_id: str):
     return None
 
 
-def get_basis_info(course_id: str):
+def get_basis_info(course_id: str, user_data: str, app_id: str):
     """
     根据课程ID获取基础教育精品课的资源信息列表。
     
@@ -362,7 +373,7 @@ def get_basis_info(course_id: str):
         if not teacher_name:
             teacher_name = "未知教师"
 
-        basis_list = fetch_resources("course_resource", relations, dir_name, teacher_name)
+        basis_list = fetch_resources("course_resource", relations, dir_name, teacher_name, user_data, app_id)
 
         return basis_list
     except requests.exceptions.HTTPError as http_err:
@@ -377,7 +388,7 @@ def get_basis_info(course_id: str):
     return None
 
 
-def get_homework_info(content_id: str):
+def get_homework_info(content_id: str, user_data: str, app_id: str):
     """
     根据内容ID获取作业的资源信息列表。
     
@@ -427,3 +438,108 @@ def get_homework_info(content_id: str):
         print(f"未知错误: {e}")
     
     return None
+
+
+def get_courseware_url(resource_id, access_token, mac_key, app_id):
+    """
+    获取资源的下载链接。
+
+    :param resource_id: 资源ID。
+    :param access_token: 访问令牌。
+    :param mac_key: MAC密钥。
+    :param app_id: 应用程序ID。
+    :return: 包含文件URL的字典列表或None。
+    """
+    # 获取当前时间的时间戳（毫秒）
+    current_time_ms = int(time.time() * 1000)
+    # 生成一个700-900之间的随机数
+    diff = str(random.randint(700, 900))
+    # 构建请求URL
+    request_url = f"https://doc-center.ykt.eduyun.cn/v1.0/c/document/{resource_id}?path=&_r={current_time_ms}"
+
+    # 请求类型
+    method_type = "GET"
+    
+    # 获取授权头
+    authorization_header = auth_encrypt(request_url, access_token, mac_key, diff, method_type)
+    
+    # 设置请求头
+    headers = {
+        'Authorization': authorization_header,
+        'sdp-app-id': app_id
+    }
+    try:
+        # 发起GET请求并检查响应状态
+        response = requests.get(url = request_url, headers = headers, timeout=10)
+        response.raise_for_status()
+
+        # 解析JSON响应数据
+        data = response.json()
+
+        custom_props = data.get("custom_properties", {})
+        file_format = custom_props.get("format")
+        file_size = custom_props.get("size")
+
+        # 遍历资源项以查找正确的文件URL
+        ti_items = data.get("ti_items", [])
+        file_url = get_download_url(ti_items, file_size, file_format)
+
+        # 返回资源信息
+        return file_url
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP错误: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        print(f"请求过程中发生错误: {req_err}")
+    except ValueError:
+        print("解析错误：响应内容不是有效的JSON格式。")
+    except Exception as e:
+        print(f"未知错误: {e}")
+    
+    return None
+
+
+def save_info(container_id: str, resource_id: str, access_token: str, mac_key: str, app_id: str):
+    request_url = "https://doc-center.ykt.eduyun.cn/v1.0/c/document/actions/add_to_center/batch?auto_rename=true"
+    data = {
+        "parent_id":"0",
+        "container_id": container_id,
+        "resource_list":[
+            {
+                "resource_id":resource_id,
+                "type":"get"
+            }
+        ]
+    }
+
+    # 生成一个700-900之间的随机数
+    diff = str(random.randint(700, 900))
+
+    # 请求类型
+    method_type = "POST"
+
+    # 获取授权头
+    authorization_header = auth_encrypt(request_url, access_token, mac_key, diff, method_type)
+    
+    # 设置请求头
+    headers = {
+        'Authorization': authorization_header,
+        'sdp-app-id': app_id
+    }
+    try:
+        # 发起GET请求并检查响应状态
+        response = requests.post(url = request_url, json = data, headers = headers, timeout=10)
+        response.raise_for_status()
+
+        # 返回资源信息
+        return True
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP错误: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        print(f"请求过程中发生错误: {req_err}")
+    except ValueError:
+        print("解析错误：响应内容不是有效的JSON格式。")
+    except Exception as e:
+        print(f"未知错误: {e}")
+    
+    return False
+    

@@ -2,6 +2,7 @@ import os
 import re
 from platform import system
 from urllib.parse import urlparse, parse_qs
+import json
 
 
 def replace_domain(web_url):
@@ -139,3 +140,23 @@ def sanitize_filename(filename: str):
         clean_filename = clean_filename.encode('utf-8')[:50].decode('utf-8', 'ignore')
     
     return clean_filename.strip('_')  # 最后去除首尾可能存在的下划线
+
+def get_info_parse(user_info: str, info_name: str):
+    """
+    从用户信息中解析指定信息。
+    参数:
+        user_info (str): 用户信息字符串。
+        info_name (str): 要解析的信息名称。
+    返回:
+        str 或 None: 解析到的信息，如果没有找到该信息则返回None。
+    """
+    # 尝试将字符串转换为 JSON 对象
+    user_data = json.loads(user_info)
+    
+    # 从 JSON 对象中提取特定的信息
+    user_value = user_data.get("value")
+    user_json = json.loads(user_value)
+    extracted_info = user_json.get(info_name)
+    
+    # 返回提取到的信息
+    return extracted_info
