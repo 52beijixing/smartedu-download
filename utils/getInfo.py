@@ -439,6 +439,88 @@ def get_homework_info(content_id: str, user_data: str, app_id: str):
     
     return None
 
+def get_thematic_infos(content_id: str, user_data: str, app_id: str):
+    try:
+        json_url = f"https://s-file-1.ykt.cbern.com.cn/zxx/ndrs/special_edu/thematic_course/{content_id}/resources/list.json"
+        response = requests.get(json_url, timeout=10)
+        response.raise_for_status()
+
+        datas = response.json()
+        ret = []
+
+        for data in datas:
+            # 获取资源基本信息
+            file_name = data.get("title")
+            custom_props = data.get("custom_properties", {})
+            file_format = custom_props.get("format")
+            file_size = custom_props.get("size")
+            file_url = None
+
+            # 遍历资源项以查找正确的文件URL
+            ti_items = data.get("ti_items", [])
+            for item in ti_items:
+                if ((file_format == "mp4" and item.get("ti_file_flag") == "href") or
+                (item.get("ti_size") == file_size and file_format != "mp4")):
+                    file_url = item.get("ti_storages")[0]
+            
+            per_ret = [{
+            "dir_name": "",
+            "file_name": file_name,
+            "file_url": file_url,
+            "file_format": file_format,
+            "file_size": file_size
+            }]
+            ret.append(per_ret)
+        
+        # 返回资源信息
+        return ret
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP错误: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        print(f"请求过程中发生错误: {req_err}")
+    except ValueError:
+        print("解析错误：响应内容不是有效的JSON格式。")
+    except Exception as e:
+        print(f"未知错误: {e}")
+
+def get_wisdom_info(content_id: str, user_data: str, app_id: str):
+    try:
+        json_url = f"https://s-file-1.ykt.cbern.com.cn/ldjy/ndrs/special_edu/resources/details/{content_id}.json"
+        response = requests.get(json_url, timeout=10)
+        response.raise_for_status()
+
+        data = response.json()        
+
+        # 获取资源基本信息
+        file_name = data.get("title")
+        custom_props = data.get("custom_properties", {})
+        file_format = custom_props.get("format")
+        file_size = custom_props.get("size")
+        file_url = None
+
+        # 遍历资源项以查找正确的文件URL
+        ti_items = data.get("ti_items", [])
+        for item in ti_items:
+            if ((file_format == "mp4" and item.get("ti_file_flag") == "href") or
+            (item.get("ti_size") == file_size and file_format != "mp4")):
+                file_url = item.get("ti_storages")[0]
+        
+        # 返回资源信息
+        return [{
+            "dir_name": "",
+            "file_name": file_name,
+            "file_url": file_url,
+            "file_format": file_format,
+            "file_size": file_size
+        }]
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP错误: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        print(f"请求过程中发生错误: {req_err}")
+    except ValueError:
+        print("解析错误：响应内容不是有效的JSON格式。")
+    except Exception as e:
+        print(f"未知错误: {e}")
 
 def get_courseware_url(resource_id, access_token, mac_key, app_id):
     """
@@ -496,7 +578,6 @@ def get_courseware_url(resource_id, access_token, mac_key, app_id):
         print(f"未知错误: {e}")
     
     return None
-
 
 def save_info(container_id: str, resource_id: str, access_token: str, mac_key: str, app_id: str):
     request_url = "https://doc-center.ykt.eduyun.cn/v1.0/c/document/actions/add_to_center/batch?auto_rename=true"
