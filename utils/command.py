@@ -70,7 +70,11 @@ def download_content(web_url: str, user_data: str, app_id: str):
     elif web_url.startswith("https://basic.smartedu.cn/schoolService/detail?contentType=thematic_course&contentId"):
         contentId = get_url_param(web_url, "contentId")
         data = get_thematic_infos(contentId, user_data, app_id)
-    elif web_url == "exit":
+    elif web_url.startswith("https://basic.smartedu.cn/syncClassroom?defaultTag="):
+        print("由于您下载的是系列视频，可能比较缓慢，请等待！")
+        default_dir = get_url_param(web_url, "defaultTag")
+        data = get_default_infos(default_dir, user_data, app_id)
+    elif web_url == "exit" or web_url == "exit()":
         print("退出程序")
         os._exit(0)
     else:

@@ -483,6 +483,81 @@ def get_thematic_infos(content_id: str, user_data: str, app_id: str):
     except Exception as e:
         print(f"未知错误: {e}")
 
+def get_default_infos(default_dir: str, user_data: str, app_id: str):
+    #吐槽一下：就我目前测试js看来，每次请求页面的时候就去所有大视频集合里面找，找出来符合要求的视频，怪不得nt东西网站这么卡
+    try:
+        #先获取default_id 就是课程下任意链接的 teachingmaterialId
+        default_ids = []
+        features = default_dir.split("/")
+        #测试发现123都有并且相同，目前暂时使用1
+        data_json = "https://s-file-1.ykt.cbern.com.cn/zxx/ndrs/national_lesson/teachingmaterials/version/data_version.json"
+        response = requests.get(data_json, timeout=10)
+        response.raise_for_status()
+
+        search_lists = response.json()
+
+        for search in search_lists.get("urls"):
+            #print(search)
+            response = requests.get(search, timeout=10)
+            response.raise_for_status()
+            datas = response.json()
+            for data in datas:
+                #先获得特征表
+                tag_list = []
+                for tag in data.get("tag_list"):
+                    tag_list.append(tag.get("tag_id"))
+                #再匹配特征相同的
+                state = True
+                for per in features:
+                    state = state and per in tag_list
+                if state:
+                    default_ids.append(data.get("id"))
+        #print(default_ids)
+        #raise
+        if len(default_ids) == 0:
+            print("无法解析，请将源链接复制并前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
+            return []
+
+        ret = []
+        for default_id in default_ids:
+        #测试发现123都有并且相同，目前暂时使用1
+            json_url = f"https://s-file-1.ykt.cbern.com.cn/zxx/ndrs/national_lesson/teachingmaterials/{default_id}/resources/parts.json" 
+            response = requests.get(json_url, timeout=10)
+            response.raise_for_status()
+
+            search_lists = response.json()
+
+            for search in search_lists:
+                response = requests.get(search, timeout=10)
+                response.raise_for_status()
+                
+                contained_title = []
+                datas = response.json()
+                for data in datas:
+                    if data["resource_type_code"] == "national_lesson":#这里只包含视频的
+                        activityId = data.get("id")
+                        #print(f"获取到id = {activityId}")
+                        ret.append(get_bookcoursebag_info(activityId,user_data,app_id))
+                        contained_title.append(data["title"])
+                
+                #double check一下防止有新的资源文件
+                for i in range(len(datas)):
+                    data = datas[i]
+                    if not data["resource_type_code"] == "national_lesson":
+                        if not data["title"] in contained_title:
+                            print(f"第{i}项目出现问题\n请将控制台信息和链接复制并前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
+        
+        # 返回资源信息
+        return ret
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP错误: {http_err}")
+    except requests.exceptions.RequestException as req_err:
+        print(f"请求过程中发生错误: {req_err}")
+    except ValueError:
+        print("解析错误：响应内容不是有效的JSON格式。")
+    except Exception as e:
+        print(f"未知错误: {e}")
+
 def get_wisdom_info(content_id: str, user_data: str, app_id: str):
     try:
         json_url = f"https://s-file-1.ykt.cbern.com.cn/ldjy/ndrs/special_edu/resources/details/{content_id}.json"
