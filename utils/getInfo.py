@@ -546,6 +546,12 @@ def get_default_infos(default_dir: str, user_data: str, app_id: str):
                         print(f"获取到视频：{title}\tid = {courseId}")
                         ret.append(get_subject_info(courseId,user_data,app_id))
                         contained_title.append(title)
+                    elif data["resource_type_code"] == "examinationpapers":#这里只包含试卷
+                        resourceId = data.get("id")
+                        title = data.get("title")
+                        #TODO: 试卷的下载
+                        contained_title.append(title)
+
                 
                 #double check一下防止有遗漏资源文件
                 state = True
