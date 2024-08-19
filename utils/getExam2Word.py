@@ -170,7 +170,7 @@ def latex_replacer(html: str)->str:
         latex = per_list[0]
         for one in replace_list:
             latex = latex.replace(one,"")
-        url = f"https://latex.codecogs.com/svg.image?{quote(latex)}"
+        url = f"https://latex.codecogs.com/png.image?{quote(latex)}"
         text = f'<img src="{url}" />'
         ret.append(text)
         #把其他的加上

@@ -163,3 +163,4 @@ cython_debug/
 *.mp4
 *.docx
 *.tex
+*.tmp
