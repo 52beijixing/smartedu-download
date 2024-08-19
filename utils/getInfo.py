@@ -534,19 +534,29 @@ def get_default_infos(default_dir: str, user_data: str, app_id: str):
                 contained_title = []
                 datas = response.json()
                 for data in datas:
-                    if data["resource_type_code"] == "national_lesson":#这里只包含视频的
+                    if data["resource_type_code"] == "national_lesson":#这里只包含国家课程
                         activityId = data.get("id")
-                        #print(f"获取到id = {activityId}")
+                        title = data.get("title")
+                        print(f"获取到视频：{title}\tid = {activityId}")
                         ret.append(get_bookcoursebag_info(activityId,user_data,app_id))
                         contained_title.append(data["title"])
+                    elif data["resource_type_code"] == "elite_lesson":#这里只包含精品课
+                        courseId = data.get("id")
+                        title = data.get("title")
+                        print(f"获取到视频：{title}\tid = {courseId}")
+                        ret.append(get_subject_info(courseId,user_data,app_id))
+                        contained_title.append(title)
                 
-                #double check一下防止有新的资源文件
+                #double check一下防止有遗漏资源文件
+                state = True
                 for i in range(len(datas)):
                     data = datas[i]
-                    if not data["resource_type_code"] == "national_lesson":
-                        if not data["title"] in contained_title:
-                            print(f"第{i}项目出现问题\n请将控制台信息和链接复制并前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
-        
+                    if not data["title"] in contained_title:
+                        print(f"第{i}项目出现问题\ntype:{data["resource_type_code"]}暂未支持\n请将控制台信息和链接复制并前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
+                        state = state and False
+                if not state:
+                    raise
+
         # 返回资源信息
         return ret
     except requests.exceptions.HTTPError as http_err:
