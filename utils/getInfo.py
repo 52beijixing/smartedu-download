@@ -4,7 +4,7 @@ import random
 import time
 from utils.crypt import auth_encrypt
 #import re #没用到正则我就注释了
-from utils.getExam2Word import *
+from utils.getExam2Pdf import *
 
 
 def get_download_url(ti_items, file_size, file_format):
@@ -550,6 +550,7 @@ def get_default_infos(default_dir: str, user_data: str, app_id: str):
                     elif data["resource_type_code"] == "examinationpapers":#这里只包含试卷
                         resourceId = data.get("id")
                         title = data.get("title")
+                        print(f"获取到视频：{title}\tid = {courseId}")
                         getExam(resourceId) #终于实现完了
                         contained_title.append(title)
 

@@ -2,7 +2,7 @@ import os
 from utils.tool import get_url_param, sanitize_filename, replace_domain
 from utils.download import download_file_from_url, download_video
 from utils.getInfo import *
-from utils.getExam2Word import *
+from utils.getExam2Pdf import *
 
 def welcome_interface():
     print("-------------------------------------------------------------")
