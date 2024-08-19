@@ -2,7 +2,7 @@ import os
 from utils.tool import get_url_param, sanitize_filename, replace_domain
 from utils.download import download_file_from_url, download_video
 from utils.getInfo import *
-
+from utils.getExam2Word import *
 
 def welcome_interface():
     print("-------------------------------------------------------------")
@@ -74,6 +74,10 @@ def download_content(web_url: str, user_data: str, app_id: str):
         print("由于您下载的是系列视频，可能比较缓慢，请等待！")
         default_dir = get_url_param(web_url, "defaultTag")
         data = get_default_infos(default_dir, user_data, app_id)
+    elif web_url.startswith("https://basic.smartedu.cn/syncClassroom/examinationpapers"):
+        resourceId = get_url_param(web_url, "resourceId")
+        getExam(resourceId)
+        data = None
     elif web_url == "exit" or web_url == "exit()":
         print("退出程序")
         os._exit(0)
@@ -81,6 +85,9 @@ def download_content(web_url: str, user_data: str, app_id: str):
         print(f"您输入的链接暂未支持!\n请前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
     
     if data is None:
+        #不属于视频的下载使用tag:None
+        return
+    elif len(data) == 0:
         print("获取数据出错！")
         return
     
