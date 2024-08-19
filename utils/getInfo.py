@@ -553,7 +553,7 @@ def get_default_infos(default_dir: str, user_data: str, app_id: str):
                     data = datas[i]
                     if not data["title"] in contained_title:
                         print(f"第{i}项目出现问题\ntype:{data["resource_type_code"]}暂未支持\n请将控制台信息和链接复制并前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
-                        state = state and False
+                        state = False
                 if not state:
                     raise
 
