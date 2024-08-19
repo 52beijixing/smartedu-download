@@ -7,6 +7,7 @@ import hashlib
 import os
 import shutil
 from html2docx import html2docx
+from urllib.parse import quote
 
 
 def get_10(url):
@@ -140,10 +141,12 @@ def getExam(resource_id: str):
 
         title = detailed_info_data["title"]
         filename = os.path.join(output_folder,f"习题-{title}.docx")
+        html = latex_replacer(html)
+        print("正在解析latex，可能需要很长时间")
         buf = html2docx(html, title=title)
+        print("正在解析latex完成")
         with open(filename, "wb") as fp:
             fp.write(buf.getvalue())
-        #TODO: 还未实现对于latex的解析
     except requests.exceptions.HTTPError as http_err:
         print(f"HTTP错误: {http_err}")
     except requests.exceptions.RequestException as req_err:
@@ -152,3 +155,25 @@ def getExam(resource_id: str):
         print("解析错误：响应内容不是有效的JSON格式。")
     except Exception as e:
         print(f"未知错误: {e}")
+
+#使用了https://latex.codecogs.com/ 非常感谢！
+def latex_replacer(html: str)->str:
+    print("非常感谢 https://latex.codecogs.com/ 的API！")
+    replace_list = [r"\(",r"\)"]
+    html_list = html.split("<latex>")
+    ret = []
+    if len(html_list) > 0:#第一个没有舍去
+        ret.append(html_list[0])
+        html_list = html_list[1::]
+    for per in html_list[1::]:
+        per_list = per.split("</latex>")
+        latex = per_list[0]
+        for one in replace_list:
+            latex = latex.replace(one,"")
+        url = f"https://latex.codecogs.com/svg.image?{quote(latex)}"
+        text = f'<img src="{url}" />'
+        ret.append(text)
+        #把其他的加上
+        other = "".join(per_list[1::])
+        ret.append(other)
+    return "".join(ret)
