@@ -519,6 +519,7 @@ def get_default_infos(default_dir: str, user_data: str, app_id: str):
             print("无法解析，请将源链接复制并前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
             return []
 
+        examIds = []
         ret = []
         for default_id in default_ids:
         #测试发现123都有并且相同，目前暂时使用1
@@ -551,7 +552,7 @@ def get_default_infos(default_dir: str, user_data: str, app_id: str):
                         resourceId = data.get("id")
                         title = data.get("title")
                         print(f"获取到题目：{title}\tid = {resourceId}")
-                        getExam(resourceId) #终于实现完了
+                        examIds.append(resourceId)
                         contained_title.append(title)
 
                 
@@ -566,7 +567,7 @@ def get_default_infos(default_dir: str, user_data: str, app_id: str):
                     raise
 
         # 返回资源信息
-        return ret
+        return (ret, examIds)
     except requests.exceptions.HTTPError as http_err:
         print(f"HTTP错误: {http_err}")
     except requests.exceptions.RequestException as req_err:
