@@ -99,7 +99,7 @@ def getExam(resource_id: str):
                     prompt = item["prompt"]#题干
                     choices = item["choices"]#选项
                     #遍历并找出选项html
-                    choices_text = list(map(lambda x: f"<div><p style=\"text-align: justify;\"><span>{x["identifier"]}.</span></p></div>" + x["text"], choices))
+                    choices_text = list(map(lambda x: f"<div><p style=\"text-align: justify;\"><span>{x['identifier']}.</span></p></div>" + x["text"], choices))
                     text_list = [prompt] + choices_text
                     text = SPLIT.join(text_list)
                     text = text.replace("${ref-path}",ref_path)
