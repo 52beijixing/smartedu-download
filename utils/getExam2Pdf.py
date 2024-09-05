@@ -14,7 +14,8 @@ from xhtml2pdf import pisa
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from xhtml2pdf.default import DEFAULT_FONT
-pdfmetrics.registerFont(TTFont('yh', 'msyh.ttf'))
+#TODO: 添加对于linux的支持
+pdfmetrics.registerFont(TTFont('yh', os.path.join(os.getenv('windir'),"Fonts\\msyh.ttc")))
 DEFAULT_FONT['helvetica'] = 'yh'
 #中文支持来自：https://blog.csdn.net/weixin_34038652/article/details/91925938
  
