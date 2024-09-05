@@ -2,7 +2,7 @@ import os
 from utils.tool import get_url_param, sanitize_filename, replace_domain
 from utils.download import download_file_from_url, download_video
 from utils.getInfo import *
-
+from utils.getExam2Pdf import *
 
 def welcome_interface():
     print("-------------------------------------------------------------")
@@ -36,6 +36,7 @@ def download_content(web_url: str, user_data: str, app_id: str):
     # 域名替换
     web_url = replace_domain(web_url)
     data = []
+    examIds = []
     # url判断
     if web_url.startswith("https://basic.smartedu.cn/tchMaterial/detail?contentType=assets_document"):
         contentId = get_url_param(web_url, "contentId")
@@ -70,13 +71,20 @@ def download_content(web_url: str, user_data: str, app_id: str):
     elif web_url.startswith("https://basic.smartedu.cn/schoolService/detail?contentType=thematic_course&contentId"):
         contentId = get_url_param(web_url, "contentId")
         data = get_thematic_infos(contentId, user_data, app_id)
-    elif web_url == "exit":
+    elif web_url.startswith("https://basic.smartedu.cn/syncClassroom?defaultTag="):
+        print("由于您下载的是系列视频，可能比较缓慢，请等待！")
+        default_dir = get_url_param(web_url, "defaultTag")
+        (data,examIds) = get_default_infos(default_dir, user_data, app_id)
+    elif web_url.startswith("https://basic.smartedu.cn/syncClassroom/examinationpapers"):
+        resourceId = get_url_param(web_url, "resourceId")
+        examIds.append(resourceId)
+    elif web_url == "exit" or web_url == "exit()":
         print("退出程序")
         os._exit(0)
     else:
         print(f"您输入的链接暂未支持!\n请前往 https://github.com/52beijixing/smartedu-download/issues 反馈！")
     
-    if data is None:
+    if len(data) == 0 and len(examIds) == 0:
         print("获取数据出错！")
         return
     
@@ -108,6 +116,9 @@ def download_content(web_url: str, user_data: str, app_id: str):
                     print(f"下载完成，文件保存在 {full_path}")
                 except Exception as e:
                     print(f"下载课件时发生错误: {e}")
+
+    for examId in examIds:
+        getExam(examId)
 
 
 def get_user_info(app_id):
